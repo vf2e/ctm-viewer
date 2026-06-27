@@ -1,5 +1,7 @@
 #include "FieldSimulator.h"
 
+#include "FieldColorMap.h"
+
 #include <QFile>
 
 #include <vtkFloatArray.h>
@@ -18,7 +20,6 @@
 namespace {
 
 constexpr double kGridSize = 10.0;
-constexpr double kGray = 0.58;
 
 } // namespace
 
@@ -136,7 +137,7 @@ void FieldSimulator::resetBrainColors(vtkPolyData *brain) const
     colors->SetName("Colors");
     colors->SetNumberOfTuples(brain->GetNumberOfPoints());
 
-    const unsigned char gray = static_cast<unsigned char>(std::lround(kGray * 255.0));
+    const unsigned char gray = static_cast<unsigned char>(std::lround(FieldColorMap::kBrainGray * 255.0));
     for (vtkIdType i = 0; i < brain->GetNumberOfPoints(); ++i) {
         colors->SetTuple3(i, gray, gray, gray);
     }
@@ -188,8 +189,8 @@ void FieldSimulator::applyToBrain(vtkPolyData *brain,
         const int gy = static_cast<int>(std::floor(fieldVertex.y / kGridSize));
         const int gz = static_cast<int>(std::floor(fieldVertex.z / kGridSize));
 
-        double minDistance = std::numeric_limits<double>::infinity();
-        double closestMagnitude = 0.0;
+        double weightSum = 0.0;
+        double magnitudeSum = 0.0;
 
         for (int dx = 0; dx <= 1; ++dx) {
             for (int dy = 0; dy <= 1; ++dy) {
@@ -218,18 +219,25 @@ void FieldSimulator::applyToBrain(vtkPolyData *brain,
                         const double ddy = fieldVertex.y - gridPoint.pos.y;
                         const double ddz = fieldVertex.z - gridPoint.pos.z;
                         const double distance = std::sqrt(ddx * ddx + ddy * ddy + ddz * ddz);
-                        if (distance < minDistance) {
-                            minDistance = distance;
-                            closestMagnitude = gridPoint.magnitude;
+                        if (distance > maxGridDistance) {
+                            continue;
                         }
+
+                        const double weight = 1.0 / (distance * distance + 4.0);
+                        magnitudeSum += gridPoint.magnitude * weight;
+                        weightSum += weight;
                     }
                 }
             }
         }
 
         unsigned char rgb[3];
-        const double mappedValue = closestMagnitude * scale;
-        colorMap.colorForValue(mappedValue, rgb);
+        if (weightSum <= 0.0) {
+            FieldColorMap::brainGrayRgb(rgb);
+        } else {
+            const double mappedValue = (magnitudeSum / weightSum) * scale;
+            colorMap.colorForValue(mappedValue, rgb);
+        }
         colors->SetTuple3(i, rgb[0], rgb[1], rgb[2]);
     }
 

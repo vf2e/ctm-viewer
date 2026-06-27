@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 
 #include <QApplication>
+#include <QIcon>
 #include <QMessageBox>
 #include <QTimer>
 
@@ -16,6 +17,11 @@ int main(int argc, char *argv[])
     app.setApplicationName(QStringLiteral("CTM Viewer"));
     app.setApplicationVersion(QStringLiteral("1.1.0"));
     app.setOrganizationName(QStringLiteral("Mag-aim"));
+
+    const QIcon icon(QStringLiteral(":/icon.ico"));
+    if (!icon.isNull()) {
+        app.setWindowIcon(icon);
+    }
 
     MainWindow window;
     window.show();

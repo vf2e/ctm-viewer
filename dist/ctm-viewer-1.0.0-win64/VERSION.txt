@@ -1,0 +1,4 @@
+﻿CTM Viewer 1.0.0
+BuildConfig: Release
+PackagedAt: 2026-06-28 00:05:18
+Qt: C:\qt5.15.2\5.15.2\msvc2019_64

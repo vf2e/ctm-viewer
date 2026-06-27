@@ -41,6 +41,7 @@ set(SOURCES
     src/FieldSimulator.cpp
     src/ColorBarWidget.cpp
     src/FloatPanel.cpp
+    src/SettingsDialog.cpp
 )
 
 set(HEADERS
@@ -51,10 +52,19 @@ set(HEADERS
     src/FieldSimulator.h
     src/ColorBarWidget.h
     src/FloatPanel.h
-    src/AppStyle.h
+    src/SettingsDialog.h
+    src/AppTheme.h
 )
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+set(RESOURCES
+    resources/app.qrc
+)
+
+if(WIN32)
+    set(APP_ICON_RESOURCE_WINDOWS "${CMAKE_CURRENT_SOURCE_DIR}/resources/app.rc")
+endif()
+
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES} ${APP_ICON_RESOURCE_WINDOWS})
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -74,6 +84,7 @@ set(CTM_VIEWER_VTK_LIBS
     vtkRenderingFreeType-${VTK_VERSION}
     vtkRenderingContextOpenGL-${VTK_VERSION}
     vtkRenderingContext2D-${VTK_VERSION}
+    vtkRenderingAnnotation-${VTK_VERSION}
     vtkInteractionStyle-${VTK_VERSION}
     vtkIOGeometry-${VTK_VERSION}
     vtkIOCore-${VTK_VERSION}
@@ -140,3 +151,9 @@ foreach(dll ${VTK_DLLS})
 endforeach()
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
+
+option(BUILD_TESTING "Build and register unit tests" ON)
+if(BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

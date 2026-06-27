@@ -3,6 +3,25 @@
 
 #include <QWidget>
 
+class QLabel;
+
+class ColorBarGradient : public QWidget
+{
+    Q_OBJECT
+
+public:
+    explicit ColorBarGradient(QWidget *parent = nullptr);
+
+    void setRange(int minValue, int maxValue);
+
+protected:
+    void paintEvent(QPaintEvent *event) override;
+
+private:
+    int m_minValue = 40;
+    int m_maxValue = 150;
+};
+
 class ColorBarWidget : public QWidget
 {
     Q_OBJECT
@@ -12,13 +31,12 @@ public:
 
     void setRange(int minValue, int maxValue);
 
-protected:
-    void paintEvent(QPaintEvent *event) override;
     QSize sizeHint() const override;
 
 private:
-    int m_minValue;
-    int m_maxValue;
+    ColorBarGradient *m_gradient;
+    QLabel *m_maxLabel;
+    QLabel *m_minLabel;
 };
 
 #endif
